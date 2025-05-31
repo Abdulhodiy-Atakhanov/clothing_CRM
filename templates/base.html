@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="uz">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Kiyimlar Do'koni WMS Tizimi{% endblock %}</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        },
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    {% block extra_css %}{% endblock %}
+
+    <style>
+        body {
+            ::-webkit-scrollbar {
+                width: 1px;
+            }
+        }
+
+        .backgorundImg {
+            background-image: url("../../media/back.jpg");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+
+            height: max-content;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 text-gray-800">
+    {% if user.is_authenticated %}
+    <div class="flex h-screen overflow-hidden">
+        <!-- Main content -->
+        <div class="flex flex-col w-0 flex-1 overflow-hidden">
+            <div class="relative z-10 flex-shrink-0 flex h-16 bg-white shadow">
+                <button type="button"
+                    class="md:hidden px-4 border-r border-gray-200 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500">
+                    <span class="sr-only">Yon panelni ochish</span>
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="flex-1 px-4 flex justify-between">
+                    <div class="flex flex">
+                        <h1 class="text-2xl font-semibold text-gray-900 self-center">
+                            {% block header_title %}{% endblock %}
+                        </h1>
+                    </div>
+                    <div class="ml-4 flex items-center md:ml-6">
+                        <div class="ml-3 relative">
+                            <div class="flex items-center">
+                                <a href="{% url 'profile' %}"
+                                    class="text-gray-500 hover:text-gray-700 p-1 rounded-full text-sm">
+                                    <span>{{ user.get_full_name|default:user.username }}</span>
+                                </a>
+
+                                <form method="post" action="{% url 'logout' %}">
+                                    {% csrf_token %}
+                                    <button type="submit"
+                                        class="ml-4 px-3 py-1 bg-gray-200 text-gray-700 rounded-md text-sm hover:bg-gray-300">
+                                        Chiqish
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <main class="flex-1 relative overflow-y-auto focus:outline-none">
+                <div class="py-6 backgorundImg">
+                    <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+                        {% if messages %}
+                        <div class="mb-4">
+                            {% for message in messages %}
+                            <div
+                                class="p-4 {% if message.tags == 'success' %}bg-green-100 text-green-700{% elif message.tags == 'error' %}bg-red-100 text-red-700{% else %}bg-blue-100 text-blue-700{% endif %} rounded-md">
+                                {{ message }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
+                        {% block content %}{% endblock %}
+                    </div>
+                </div>
+            </main>
+
+            <div class="hidden md:flex md:flex-shrink-0">
+                <div class="flex flex-col w-full">
+                    <div class="flex flex-grow justify-between flex-grow overflow-y-auto">
+
+                        <div class="flex items-center flex-shrink-0 px-4">
+                            <span class="text-xl font-semibold text-gray-900">Clothing WMS</span>
+                        </div>
+
+                        <div class="flex-grow flex flex-col justify-between">
+                            <nav class="px-2 flex-grow space-x-4 flex justify-center items-center gap-4 py-4">
+                                <a href="{% url 'dashboard' %}"
+                                    class="{% if request.path == '/' %}bg-blue-500 text-white{% else %}hover:bg-indigo-600 hover:text-white{% endif %} text-gray-600 group flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                                    <i
+                                        class="fas fa-tachometer-alt mr-3 text-primary-300 {% if request.path == '/' %}bg-blue-500 text-white{% endif %}"></i>
+                                    Boshqaruv paneli
+                                </a>
+                                <a href="{% url 'product_list' %}"
+                                    class="{% if '/products/' in request.path %}bg-blue-500 text-white{% else %}hover:bg-indigo-600 hover:text-white{% endif %} text-gray-600 group flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                                    <i
+                                        class="fas fa-tshirt mr-3 text-primary-300 {% if request.path == '/products/' %}bg-blue-500 text-white{% endif %}"></i>
+                                    Mahsulotlar
+                                </a>
+                                <a href="{% url 'category_list' %}"
+                                    class="{% if '/categories/' in request.path %}bg-blue-500 text-white{% else %}hover:bg-indigo-600 hover:text-white{% endif %} text-gray-600 group flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                                    <i
+                                        class="fas fa-tags mr-3 text-primary-300 {% if request.path == '/categories/' %}bg-blue-500 text-white{% endif %}"></i>
+                                    Kategoriyalar
+                                </a>
+                                <a href="{% url 'customer_list' %}"
+                                    class="{% if '/customers/' in request.path %}bg-blue-500 text-white{% else %}hover:bg-indigo-600 hover:text-white{% endif %} text-gray-600 group flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                                    <i
+                                        class="fas fa-users mr-3 text-primary-300 {% if request.path == '/customers/' %}bg-blue-500 text-white{% endif %}"></i>
+                                    Mijozlar
+                                </a>
+                                <a href="{% url 'order_list' %}"
+                                    class="{% if '/orders/' in request.path %}bg-blue-500 text-white{% else %}hover:bg-indigo-600 hover:text-white{% endif %} text-gray-600 group flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                                    <i
+                                        class="fas fa-shopping-cart mr-3 text-primary-300 {% if request.path == '/orders/' %}bg-blue-500 text-white{% endif %}"></i>
+                                    Buyurtmalar
+                                </a>
+                                <a href="{% url 'inventory_list' %}"
+                                    class="{% if '/inventory/' in request.path %}bg-blue-500 text-white{% else %}hover:bg-indigo-600 hover:text-white{% endif %} text-gray-600 group flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                                    <i
+                                        class="fas fa-boxes mr-3 text-primary-300 {% if request.path == '/inventory/' %}bg-blue-500 text-white{% endif %}"></i>
+                                    Ombor
+                                </a>
+                            </nav>
+                        </div>
+
+                        <div class="flex-shrink-0 flex pe-5">
+                            <a href="{% url 'profile' %}" class="flex-shrink-0 w-full group block">
+                                <div class="flex items-center" style="height: 60px!important;">
+                                    <div>
+                                        {% if user.profile_image %}
+                                        <img class="inline-block h-9 w-9 rounded-full"
+                                            src="{{ user.profile_image.url }}" alt="{{ user.username }}">
+                                        {% else %}
+                                        <div
+                                            class="inline-block h-9 w-9 rounded-full bg-primary-500 flex items-center justify-center text-white">
+                                            {{ user.username.0|upper }}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="ml-3">
+                                        <p class="text-sm font-medium text-gray-900">
+                                            {{user.get_full_name|default:user.username }}</p>
+                                        <p class="text-xs font-medium text-blue-700">{{ user.get_role_display }}</p>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    {% block auth_content %}{% endblock %}
+    {% endif %}
+
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

@@ -1,0 +1,260 @@
+{% extends "base.html" %}
+
+{% block title %}Inventarizatsiya - Clothing CRM{% endblock %}
+
+{% block header_title %}Inventarizatsiya{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
+    <div class="px-6 py-6 sm:px-8 flex flex-col sm:flex-row justify-between items-center bg-gray-50">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-900">Inventarizatsiya</h2>
+            <p class="mt-2 text-base text-gray-600">Mahsulot inventarizatsiyasini boshqarish</p>
+        </div>
+    </div>
+    
+    <!-- Qidirish va Filtrlash Formasi -->
+    <div class="px-6 py-4 border-b border-gray-200 bg-white">
+        <form method="get" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <label for="search" class="block text-sm font-semibold text-gray-700">Qidirish</label>
+                <div class="mt-1 relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-search text-gray-400"></i>
+                    </div>
+                    <input type="text" name="search" id="search" value="{{ search_query }}" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-600 focus:border-blue-600 text-sm placeholder-gray-500 transition-all duration-200" placeholder="Mahsulotlarni qidirish">
+                </div>
+            </div>
+            
+            <div>
+                <label for="stock" class="block text-sm font-semibold text-gray-700">Zaxira holati</label>
+                <select id="stock" name="stock" class="mt-1 block w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-600 focus:border-blue-600 text-sm text-gray-700 bg-white transition-all duration-200">
+                    <option value="">Barchasi</option>
+                    <option value="low" {% if stock_filter == 'low' %}selected{% endif %}>Kam zaxira</option>
+                </select>
+            </div>
+            
+            <div class="flex items-end space-x-3">
+                <button type="submit" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200">
+                    Filtrlash
+                </button>
+                {% if search_query or stock_filter %}
+                    <a href="{% url 'inventory_list' %}" class="inline-flex items-center px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200">
+                        Tozalash
+                    </a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+    
+    <!-- Inventarizatsiya Jadvali -->
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-blue-400">
+                <tr>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-white uppercase tracking-wide">
+                        Mahsulot
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-white uppercase tracking-wide">
+                        Kategoriya
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-white uppercase tracking-wide">
+                        Hozirgi zaxira
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-white uppercase tracking-wide">
+                        Zaxira darajasi
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-white uppercase tracking-wide">
+                        Keyingi zaxira
+                    </th>
+                    <th scope="col" class="relative px-6 py-3 text-white">
+                        <span class="sr-only">Harakatlar</span>
+                    </th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for inventory in page_obj %}
+                    <tr class="hover:bg-gray-50 transition-all duration-200">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 h-12 w-12">
+                                    {% if inventory.product.image %}
+                                        <img class="h-12 w-12 rounded-lg object-cover" src="{{ inventory.product.image.url }}" alt="{{ inventory.product.name }}">
+                                    {% else %}
+                                        <div class="h-12 w-12 rounded-lg bg-gray-200 flex items-center justify-center">
+                                            <i class="fas fa-tshirt text-gray-500 text-lg"></i>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="ml-4">
+                                    <div class="text-sm font-medium text-gray-900">
+                                        {{ inventory.product.name }}
+                                    </div>
+                                    <div class="text-sm text-gray-500">
+                                        {{ inventory.product.size }} | {{ inventory.product.color }}
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">{{ inventory.product.category.name }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm {% if inventory.needs_restock %}text-red-600 font-medium{% else %}text-gray-900{% endif %}">
+                                {{ inventory.quantity }}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">{{ inventory.restock_level }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">
+                                {% if inventory.next_restock_date %}
+                                    {{ inventory.next_restock_date|date:"M d, Y" }}
+                                {% else %}
+                                    Rejalashtirilmagan
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            {% if user.role == 'admin' or user.role == 'manager' %}
+                                <a href="{% url 'inventory_edit' inventory.pk %}" class="text-blue-600 hover:text-blue-800 transition-all duration-200">Inventarni yangilash</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="6" class="px-6 py-12 whitespace-nowrap text-center text-gray-500">
+                            Inventarizatsiya uchun mahsulot topilmadi
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Sahifalash -->
+    {% if page_obj.has_other_pages %}
+        <div class="bg-white px-6 py-4 flex items-center justify-between border-t border-gray-200">
+            <div class="flex-1 flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-700">
+                        Ko'rsatish <span class="font-medium">{{ page_obj.start_index }}</span> dan <span class="font-medium">{{ page_obj.end_index }}</span> gacha jami <span class="font-medium">{{ page_obj.paginator.count }}</span> natija
+                    </p>
+                </div>
+                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Sahifalash">
+                    {% if page_obj.has_previous %}
+                        <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if stock_filter %}&stock={{ stock_filter }}{% endif %}" class="relative inline-flex items-center px-3 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                            <span class="sr-only">Oldingi</span>
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    {% else %}
+                        <span class="relative inline-flex items-center px-3 py-2 rounded-l-md border border-gray-300 bg-gray-100 text-sm font-medium text-gray-400 cursor-not-allowed">
+                            <span class="sr-only">Oldingi</span>
+                            <i class="fas fa-chevron-left"></i>
+                        </span>
+                    {% endif %}
+                    
+                    {% for i in page_obj.paginator.page_range %}
+                        {% if page_obj.number == i %}
+                            <span class="relative inline-flex items-center px-4 py-2 border border-blue-600 bg-blue-50 text-sm font-medium text-blue-700">
+                                {{ i }}
+                            </span>
+                        {% elif i > page_obj.number|add:'-3' and i < page_obj.number|add:'3' %}
+                            <a href="?page={{ i }}{% if search_query %}&search={{ search_query }}{% endif %}{% if stock_filter %}&stock={{ stock_filter }}{% endif %}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                                {{ i }}
+                            </a>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if stock_filter %}&stock={{ stock_filter }}{% endif %}" class="relative inline-flex items-center px-3 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                            <span class="sr-only">Keyingi</span>
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    {% else %}
+                        <span class="relative inline-flex items-center px-3 py-2 rounded-r-md border border-gray-300 bg-gray-100 text-sm font-medium text-gray-400 cursor-not-allowed">
+                            <span class="sr-only">Keyingi</span>
+                            <i class="fas fa-chevron-right"></i>
+                        </span>
+                    {% endif %}
+                </nav>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Inventarizatsiya Grafikasi -->
+<div class="mt-8 bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
+    <div class="px-6 py-6 sm:px-8 bg-gray-50">
+        <h2 class="text-2xl font-bold text-gray-900">Inventarizatsiyaning umumiy ko'rinishi</h2>
+        <p class="mt-2 text-base text-gray-600">Hozirgi zaxira darajasini vizual ko'rsatish</p>
+    </div>
+    <div class="border-t border-gray-200 px-6 py-6 sm:p-8">
+        <div class="h-80">
+            <canvas id="inventoryChart"></canvas>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Inventarizatsiya ma'lumotlarini olish va grafik yaratish
+    fetch('{% url "inventory_data" %}')
+        .then(response => response.json())
+        .then(data => {
+            const ctx = document.getElementById('inventoryChart').getContext('2d');
+            
+            // Grafik uchun ma'lumotlarni tayyorlash
+            const productNames = data.map(item => item.product__name);
+            const quantities = data.map(item => item.quantity);
+            const restockLevels = data.map(item => item.restock_level);
+            
+            // Grafik yaratish
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: productNames,
+                    datasets: [
+                        {
+                            label: 'Hozirgi zaxira',
+                            data: quantities,
+                            backgroundColor: 'rgba(14, 165, 233, 0.7)',
+                            borderColor: 'rgba(14, 165, 233, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Zaxira darajasi',
+                            data: restockLevels,
+                            backgroundColor: 'rgba(239, 68, 68, 0.5)',
+                            borderColor: 'rgba(239, 68, 68, 1)',
+                            borderWidth: 1,
+                            type: 'line'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Miqdor'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                autoSkip: true,
+                                maxRotation: 45,
+                                minRotation: 45
+                            }
+                        }
+                    }
+                }
+            });
+        });
+</script>
+{% endblock %}

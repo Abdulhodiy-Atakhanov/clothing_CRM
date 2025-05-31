@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+
+{% block title %}Mahsulotlar - Clothing WMS{% endblock %}
+
+{% block header_title %}Mahsulotlar{% endblock %}
+
+{% block content %}
+<div class="bg-white shadow overflow-hidden sm:rounded-lg">
+    <div class="px-4 py-5 sm:px-6 flex justify-between items-center">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-800">Mahsulotlar</h2>
+            <p class="mt-1 max-w-2xl text-sm text-gray-500">Barcha mahsulotlar ro'yxati</p>
+        </div>
+        <div class="flex space-x-3">
+            {% if user.role == 'admin' or user.role == 'manager' %}
+            <a href="{% url 'product_add' %}"
+                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                <i class="fas fa-plus mr-2"></i> Mahsulot qo'shish
+            </a>
+            {% endif %}
+            {% if user.role == 'admin' or user.role == 'manager' %}
+            <a href="{% url 'export_products' %}"
+                class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                <i class="fas fa-download mr-2"></i> Eksport
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Qidirish Formasi -->
+    <div class="px-4 py-3 border-b border-gray-200 w-full">
+        <form method="get" class="flex w-full md:max-w-md gap-6">
+            <div class="relative flex-grow w-full me-64">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i class="fas fa-search text-gray-400"></i>
+                </div>
+                <input type="text" name="search" value="{{ search_query }}"
+                    class="block w-full pl-10 sm:text-sm rounded-md h-10 border border-gray-300 focus:ring-primary-500 focus:border-primary-500"
+                    placeholder="Mahsulotlarni qidirish..." style="width: 1100px;">
+            </div>
+            <button type="submit"
+                class="ml-3 inline-flex ms-96 items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md 
+                text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                Qidirish
+            </button>
+            {% if search_query %}
+            <a href="{% url 'product_list' %}"
+                class="ml-2 inline-flex items-center px-3 py-2 border border-gray-300 text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                Tozalash
+            </a>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Mahsulotlar Jadvali -->
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-blue-50">
+                <tr>
+                    <th scope="col"
+                        class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider
+                        bg-blue-400 text-white">
+                        Mahsulot
+                    </th>
+                    <th scope="col"
+                        class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider
+                        bg-blue-400 text-white">
+                        Kategoriya
+                    </th>
+                    <th scope="col"
+                        class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider
+                        bg-blue-400 text-white">
+                        Narx
+                    </th>
+                    <th scope="col"
+                        class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider
+                        bg-blue-400 text-white">
+                        O'lcham
+                    </th>
+                    <th scope="col"
+                        class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider
+                        bg-blue-400 text-white">
+                        Rang
+                    </th>
+                    <th scope="col"
+                        class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider
+                        bg-blue-400 text-white">
+                        Qolgan
+                    </th>
+                    <th scope="col" class="relative px-6 py-3 bg-blue-400 text-gray-700">
+                        <span class="sr-only">Harakatlar</span>
+                    </th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for product in page_obj %}
+                <tr class="hover:bg-gray-100 transition">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 h-10 w-10">
+                                {% if product.image %}
+                                <img class="h-10 w-10 rounded-full object-cover" src="{{ product.image.url }}"
+                                    alt="{{ product.name }}">
+                                {% else %}
+                                <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
+                                    <i class="fas fa-tshirt text-gray-400"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="ml-4">
+                                <div class="text-sm font-medium text-gray-900">
+                                    {{ product.name }}
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">{{ product.category.name }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-gray-800 font-medium">
+                        <div class="text-sm text-gray-900">${{ product.price }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">{{ product.get_size_display }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">{{ product.color }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        {% if product.inventory %}
+                        <div
+                            class="text-sm {% if product.inventory.needs_restock %}text-red-600 font-bold{% else %}text-gray-900 font-bold{% endif %}">
+                            {{ product.inventory.quantity }}
+                        </div>
+                        {% else %}
+                        <div class="text-sm text-gray-500 italic">Hisobda yo'q</div>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <a href="{% url 'product_detail' product.pk %}"
+                            class="text-primary-600 hover:text-primary-900 mr-3 hover:underline">Ko'rish</a>
+                        {% if user.role == 'admin' or user.role == 'manager' %}
+                        <a href="{% url 'product_edit' product.pk %}"
+                            class="text-indigo-600 hover:text-indigo-900 mr-3 hover:underline">Tahrirlash</a>
+                        {% endif %}
+                        {% if user.role == 'admin' %}
+                        <a href="{% url 'product_delete' product.pk %}"
+                            class="text-red-600 hover:text-red-900 hover:underline">O'chirish</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr class="hover:bg-gray-100 transition">
+                    <td colspan="7" class="px-6 py-4 whitespace-nowrap text-center text-gray-500">
+                        Mahsulot topilmadi
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Sahifalash -->
+    {% if page_obj.has_other_pages %}
+    <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+        <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+            <div>
+                <p class="text-sm text-gray-700">
+                    Ko'rsatilmoqda <span class="font-medium">{{ page_obj.start_index }}</span> dan <span class="font-medium">
+                        {{page_obj.end_index }}</span> gacha jami <span class="font-medium">{{ page_obj.paginator.count }}</span>
+                    natija
+                </p>
+            </div>
+            <div>
+                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Sahifalash">
+                    {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}"
+                        class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                        <span class="sr-only">Oldingi</span>
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                    {% else %}
+                    <span
+                        class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-gray-100 text-sm font-medium text-gray-400 cursor-not-allowed">
+                        <span class="sr-only">Oldingi</span>
+                        <i class="fas fa-chevron-left"></i>
+                    </span>
+                    {% endif %}
+
+                    {% for i in page_obj.paginator.page_range %}
+                    {% if page_obj.number == i %}
+                    <span
+                        class="relative inline-flex items-center px-4 py-2 border border-primary-500 bg-primary-50 text-sm font-medium text-primary-600">
+                        {{ i }}
+                    </span>
+                    {% elif i > page_obj.number|add:'-3' and i < page_obj.number|add:'3' %} <a
+                        href="?page={{ i }}{% if search_query %}&search={{ search_query }}{% endif %}"
+                        class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                        {{ i }}
+                        </a>
+                        {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}"
+                            class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                            <span class="sr-only">Keyingi</span>
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                        {% else %}
+                        <span
+                            class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-gray-100 text-sm font-medium text-gray-400 cursor-not-allowed">
+                            <span class="sr-only">Keyingi</span>
+                            <i class="fas fa-chevron-right"></i>
+                        </span>
+                        {% endif %}
+                </nav>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

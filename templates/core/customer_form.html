@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - Kiyim-kechak WMS{% endblock %}
+
+{% block header_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="bg-white shadow overflow-hidden sm:rounded-lg">
+    <div class="px-4 py-5 sm:px-6">
+        <h2 class="text-lg leading-6 font-medium text-gray-900">{{ title }}</h2>
+        <p class="mt-1 max-w-2xl text-sm text-gray-500">
+            {% if form.instance.pk %}Mijoz ma'lumotlarini yangilash{% else %}Yangi mijoz yaratish{% endif %}
+        </p>
+    </div>
+
+    <div class="border-t border-gray-200">
+        <form method="post" class="divide-y divide-gray-200">
+            {% csrf_token %}
+
+            <div class="px-4 py-5 sm:p-6">
+                <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                    <!-- Ism -->
+                    <div class="sm:col-span-3">
+                        <label for="{{ form.name.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                            Ism
+                        </label>
+                        <div class="mt-1">
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                                <p class="mt-2 text-sm text-red-600">{{ form.name.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Telefon raqam -->
+                    <div class="sm:col-span-3">
+                        <label for="{{ form.phone.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                            Telefon raqam
+                        </label>
+                        <div class="mt-1">
+                            {{ form.phone }}
+                            {% if form.phone.errors %}
+                                <p class="mt-2 text-sm text-red-600">{{ form.phone.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Elektron manzil -->
+                    <div class="sm:col-span-3">
+                        <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                            Elektron manzil
+                        </label>
+                        <div class="mt-1">
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                                <p class="mt-2 text-sm text-red-600">{{ form.email.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Manzil -->
+                    <div class="sm:col-span-6">
+                        <label for="{{ form.address.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                            Manzil
+                        </label>
+                        <div class="mt-1">
+                            {{ form.address }}
+                            {% if form.address.errors %}
+                                <p class="mt-2 text-sm text-red-600">{{ form.address.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="px-4 py-3 bg-gray-50 text-right sm:px-6">
+                <a href="{% url 'customer_list' %}" class="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 mr-2">
+                    Bekor qilish
+                </a>
+                <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                    Saqlash
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
